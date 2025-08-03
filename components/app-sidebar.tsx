@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useEffect, useState } from "react";
 import {
   AudioWaveform,
   BookOpen,
@@ -26,8 +27,10 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 
+import { createClient } from "@/lib/supabase/client";
+
 // This is sample data.
-const data = {
+const data_tutorial = {
   user: {
     name: "shadcn",
     email: "m@example.com",
@@ -157,19 +160,41 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  return (
+  const [user, setUser] = useState<any>(null);
+  const supabase = createClient();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (error) {
+          console.error("Error fetching user:", error);
+          return;
+        }
+        setUser(data?.user ?? null);
+      } catch (err) {
+        console.error("Unexpected error:", err);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  return user ? (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <TeamSwitcher teams={data_tutorial.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <NavMain items={data_tutorial.navMain} />
+        <NavProjects projects={data_tutorial.projects} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  ) : (
+    <div>No user logged in</div>
+  );
 }

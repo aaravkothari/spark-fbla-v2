@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { InfoIcon } from "lucide-react";
 import { FetchDataSteps } from "@/components/tutorial/fetch-data-steps";
+import { SidebarInset } from "@/components/ui/sidebar";
 
 export default async function ProtectedPage() {
   const supabase = await createClient();
@@ -13,7 +14,8 @@ export default async function ProtectedPage() {
   }
 
   return (
-    <div className="flex-1 w-full flex flex-col gap-12">
+    <SidebarInset>
+    <div className="flex-1 flex flex-col gap-12 m-4">
       <div className="w-full">
         <div className="bg-accent text-sm p-3 px-5 rounded-md text-foreground flex gap-3 items-center">
           <InfoIcon size="16" strokeWidth={2} />
@@ -32,5 +34,6 @@ export default async function ProtectedPage() {
         <FetchDataSteps />
       </div>
     </div>
+    </SidebarInset>
   );
 }
