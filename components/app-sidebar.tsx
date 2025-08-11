@@ -160,27 +160,9 @@ const data_tutorial = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const [user, setUser] = useState<any>(null);
-  const supabase = createClient();
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const { data, error } = await supabase.auth.getUser();
-        if (error) {
-          console.error("Error fetching user:", error);
-          return;
-        }
-        setUser(data?.user ?? null);
-      } catch (err) {
-        console.error("Unexpected error:", err);
-      }
-    };
 
-    fetchUser();
-  }, []);
-
-  return user ? (
+  return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <TeamSwitcher teams={data_tutorial.teams} />
@@ -190,11 +172,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavProjects projects={data_tutorial.projects} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} />
+        <NavUser />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  ) : (
-    <div>No user logged in</div>
-  );
+  ) 
 }
