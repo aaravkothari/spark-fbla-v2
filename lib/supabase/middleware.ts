@@ -59,6 +59,37 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  if (
+    user &&
+    (request.nextUrl.pathname.startsWith("/login") ||
+    request.nextUrl.pathname.startsWith("/auth/sign-up"))
+  ) {
+
+    // no user, potentially respond by redirecting the user to the login page
+    const url = request.nextUrl.clone();
+    url.pathname = "/";
+    return NextResponse.redirect(url);
+
+  }
+
+  if (user) {
+    const { data: profile, error } = await supabase
+      .from("users")
+      .select("requested_role")
+      .eq("id", user.sub) // `sub` claim holds the UUID of the auth user
+      .single();
+
+    if (!error && (!profile || profile.requested_role === null)) {
+      // Redirect to complete-signup page if profile incomplete
+      if (!request.nextUrl.pathname.startsWith("/auth/complete-signup")) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/auth/complete-signup";
+        return NextResponse.redirect(url);
+      }
+    }
+  }
+
+
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
   // If you're creating a new response object with NextResponse.next() make sure to:
   // 1. Pass the request in it, like so:
