@@ -75,7 +75,7 @@ export async function updateSession(request: NextRequest) {
   if (user) {
     const { data: profile, error } = await supabase
       .from("users")
-      .select("requested_role")
+      .select("requested_role, role")
       .eq("id", user.sub) // `sub` claim holds the UUID of the auth user
       .single();
 
@@ -84,6 +84,15 @@ export async function updateSession(request: NextRequest) {
       if (!request.nextUrl.pathname.startsWith("/auth/complete-signup")) {
         const url = request.nextUrl.clone();
         url.pathname = "/auth/complete-signup";
+        return NextResponse.redirect(url);
+      }
+    }
+
+    if (request.nextUrl.pathname.startsWith("/protected/admin")) {
+      if (profile?.role !== "Admin") {
+        console.log("not admin", profile?.role)
+        const url = request.nextUrl.clone();
+        url.pathname = "/protected"; // or an /unauthorized page
         return NextResponse.redirect(url);
       }
     }
