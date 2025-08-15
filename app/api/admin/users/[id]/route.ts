@@ -39,11 +39,12 @@ async function ensureRequesterIsAdmin() {
 // PATCH: change a user's role (including "approve" -> set role=requested_role)
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   const ok = await ensureRequesterIsAdmin();
   if (!ok) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  const { id } = await context.params; // <-- await it
   const admin = createAdminClient();
   const body = await req.json().catch(() => ({}));
   const { mode, role } = body as { mode?: 'approve' | 'set'; role?: string };
@@ -52,7 +53,7 @@ export async function PATCH(
     const { data: u, error: selErr } = await admin
       .from('users')
       .select('requested_role')
-      .eq('id', params.id)
+      .eq('id', id)
       .maybeSingle();
     if (selErr) return NextResponse.json({ error: selErr.message }, { status: 500 });
     if (!u?.requested_role) {
@@ -61,17 +62,14 @@ export async function PATCH(
     const { error: upErr } = await admin
       .from('users')
       .update({ role: u.requested_role /* , requested_role: null */ })
-      .eq('id', params.id);
+      .eq('id', id);
     if (upErr) return NextResponse.json({ error: upErr.message }, { status: 500 });
     return NextResponse.json({ ok: true });
   }
 
   if (mode === 'set') {
     if (!role) return NextResponse.json({ error: 'Missing role' }, { status: 400 });
-    const { error: upErr } = await admin
-      .from('users')
-      .update({ role })
-      .eq('id', params.id);
+    const { error: upErr } = await admin.from('users').update({ role }).eq('id', id);
     if (upErr) return NextResponse.json({ error: upErr.message }, { status: 500 });
     return NextResponse.json({ ok: true });
   }
@@ -82,25 +80,19 @@ export async function PATCH(
 // DELETE: remove user entirely (auth.users + public.users)
 export async function DELETE(
   _req: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   const ok = await ensureRequesterIsAdmin();
   if (!ok) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  const { id } = await context.params; // <-- await it
   const admin = createAdminClient();
 
-  // 1) delete from Auth
-  const { error: delAuthErr } = await admin.auth.admin.deleteUser(params.id);
-  if (delAuthErr) {
-    return NextResponse.json({ error: delAuthErr.message }, { status: 500 });
-  }
+  const { error: delAuthErr } = await admin.auth.admin.deleteUser(id);
+  if (delAuthErr) return NextResponse.json({ error: delAuthErr.message }, { status: 500 });
 
-  // 2) delete any remaining row in public.users
-  const { error: delRowErr } = await admin.from('users').delete().eq('id', params.id);
-  if (delRowErr) {
-    // OK to return 200; row may already be gone due to FK cascades or earlier cleanup
-    return NextResponse.json({ warning: delRowErr.message, ok: true });
-  }
+  const { error: delRowErr } = await admin.from('users').delete().eq('id', id);
+  if (delRowErr) return NextResponse.json({ warning: delRowErr.message, ok: true });
 
   return NextResponse.json({ ok: true });
 }

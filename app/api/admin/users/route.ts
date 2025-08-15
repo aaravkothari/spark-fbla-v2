@@ -27,7 +27,9 @@ async function ensureRequesterIsAdmin() {
   // 1) Verify the requester is authenticated
   const supa = await createServerAnonClient();
   const { data: { user }, error } = await supa.auth.getUser();
+  // console.log(error)
   if (error || !user) return null;
+  // console.log(user)
 
   // 2) Use **service role** to read their role (bypasses RLS entirely)
   const admin = createAdminClient();
@@ -36,7 +38,7 @@ async function ensureRequesterIsAdmin() {
     .select('role')
     .eq('id', user.id)
     .maybeSingle();
-
+  console.log(me)
   if (meErr || !me || me.role !== 'Admin') return null;
   return { user };
 }
