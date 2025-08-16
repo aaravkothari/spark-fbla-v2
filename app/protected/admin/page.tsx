@@ -102,6 +102,7 @@ export default function AdminUsersPage() {
 
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         {error && <p className="text-sm text-red-600">{error}</p>}
+        {loading && <p className="text-sm text-muted-foreground">Loading…</p>}
 
         <DataTable
           columns={columns}
@@ -109,7 +110,7 @@ export default function AdminUsersPage() {
           meta={{ busyId, onApprove, onDelete, onRoleChange }}
         />
 
-        {loading && <p className="text-sm text-muted-foreground">Loading…</p>}
+        
       </div>
     </SidebarInset>
   );
