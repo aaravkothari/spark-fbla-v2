@@ -25,7 +25,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
-  Paperclip,
   Send,
   StopCircle,
   RefreshCw,
@@ -35,6 +34,8 @@ import {
   User,
   Plus,
   MoreVertical,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -45,7 +46,7 @@ type Message = {
   role: Role;
   content: string;
   createdAt: number;
-  pending?: boolean; // for optimistic/streaming UI
+  pending?: boolean;
 };
 
 const quickPrompts = [
@@ -67,7 +68,6 @@ const starterMessages: Message[] = [
 
 function ChatBubble({ msg }: { msg: Message }) {
   const isUser = msg.role === "user";
-  const isAssistant = msg.role === "assistant";
   return (
     <div className={cn("flex w-full gap-3", isUser ? "justify-end" : "justify-start")}>
       {!isUser && (
@@ -115,7 +115,7 @@ function SidePresets({
   disabled?: boolean;
 }) {
   return (
-    <Card className="hidden lg:flex w-[300px] flex-col p-4 gap-3 border-border/60">
+    <Card className="w-[300px] flex-col p-4 gap-3 border-border/60 hidden lg:flex">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-primary" />
@@ -165,6 +165,7 @@ export default function SparkAIPage() {
   const [messages, setMessages] = useState<Message[]>(starterMessages);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [showPresets, setShowPresets] = useState(false); // <-- sidebar toggle (default hidden)
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to the latest message
@@ -198,16 +199,13 @@ export default function SparkAIPage() {
   const appendToAssistant = (id: string, chunk: string, done = false) => {
     setMessages((prev) =>
       prev.map((msg) =>
-        msg.id === id
-          ? { ...msg, content: msg.content + chunk, pending: !done }
-          : msg
+        msg.id === id ? { ...msg, content: msg.content + chunk, pending: !done } : msg
       )
     );
   };
 
-  // Replace with your real API call (streaming or not).
-  const fakeStream = async (prompt: string, onToken: (t: string, done?: boolean) => void) => {
-    // Simulated tokens for demo.
+  // Demo stream
+  const fakeStream = async (_prompt: string, onToken: (t: string, done?: boolean) => void) => {
     const tokens = [
       "Here’s a polished outline to get you rolling.\n\n",
       "1) Kickoff & icebreaker (5 min)\n",
@@ -230,39 +228,22 @@ export default function SparkAIPage() {
       addUserMessage(content);
       setInput("");
 
-      // show assistant pending bubble and stream into it
       const asstId = addAssistantPending();
 
       try {
-        // ---- replace this with your /api/sparkai streaming ----
-        // Example for real streaming:
-        // const res = await fetch("/api/sparkai", {
-        //   method: "POST",
-        //   headers: { "Content-Type": "application/json" },
-        //   body: JSON.stringify({ messages: [...messages, { role: "user", content }] }),
-        // });
-        // const reader = res.body?.getReader();
-        // const decoder = new TextDecoder();
-        // while (true) {
-        //   const { value, done } = await reader!.read();
-        //   if (done) break;
-        //   appendToAssistant(asstId, decoder.decode(value), false);
-        // }
-        // appendToAssistant(asstId, "", true);
+        // Replace with your real streaming call
         await fakeStream(content, (tok, done) => appendToAssistant(asstId, tok, !!done));
-      } catch (e) {
+      } catch {
         appendToAssistant(asstId, "Sorry—something went wrong. Please try again.", true);
-        // Optionally log error
       } finally {
         setIsSending(false);
       }
     },
-    [appendToAssistant, input, isSending, messages]
+    [input, isSending]
   );
 
   const clearChat = () => setMessages(starterMessages);
 
-  // Keyboard: Enter to send, Shift+Enter for newline
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -272,15 +253,20 @@ export default function SparkAIPage() {
 
   const useQuickPrompt = (text: string) => {
     setInput(text);
-    // optionally auto-send:
-    // send(text);
+    // send(text) // uncomment to auto-send
   };
 
   const canSend = useMemo(() => input.trim().length > 0 && !isSending, [input, isSending]);
 
+  // Layout classes that respond to the toggle
+  const gridClass = cn(
+    "grid h-[calc(100vh-5rem)] gap-4",
+    showPresets ? "grid-cols-1 lg:grid-cols-[300px_1fr]" : "grid-cols-1"
+  );
+
   return (
     <SidebarInset>
-      {/* Header (unchanged) */}
+      {/* Header */}
       <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
         <div className="flex items-center gap-2 px-4">
           <SidebarTrigger className="-ml-1" />
@@ -300,11 +286,12 @@ export default function SparkAIPage() {
       </header>
 
       {/* Main */}
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-0 h-[calc(100vh-4rem)]">
-        <div className="grid flex-1 min-h-0 grid-cols-1 gap-4 lg:grid-cols-[300px_1fr]">
-
-          {/* Left: presets / session info */}
-          <SidePresets onUsePrompt={useQuickPrompt} onClear={clearChat} disabled={isSending} />
+      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+        <div className={gridClass}>
+          {/* Left: presets (render only when toggled on) */}
+          {showPresets && (
+            <SidePresets onUsePrompt={useQuickPrompt} onClear={clearChat} disabled={isSending} />
+          )}
 
           {/* Right: chat panel */}
           <Card className="flex min-h-0 flex-col border-border/60">
@@ -323,11 +310,22 @@ export default function SparkAIPage() {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
+                  <Button variant="ghost" size="icon" aria-label="Chat menu">
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setShowPresets((v) => !v)}>
+                    {showPresets ? (
+                      <>
+                        <PanelLeftClose className="mr-2 h-4 w-4" /> Hide SparkAssist
+                      </>
+                    ) : (
+                      <>
+                        <PanelLeftOpen className="mr-2 h-4 w-4" /> Show SparkAssist
+                      </>
+                    )}
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={clearChat}>
                     <RefreshCw className="mr-2 h-4 w-4" />
                     New chat
@@ -352,40 +350,18 @@ export default function SparkAIPage() {
             {/* Composer */}
             <div className="border-t p-3">
               <div className="mx-auto flex w-full max-w-3xl flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="outline" size="icon" disabled>
-                          <Paperclip className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Attach (coming soon)</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-
-                  <div className="flex-1" />
-
-                  <Badge variant="outline" className="hidden sm:inline-flex">
-                    Press <kbd className="mx-1 rounded border px-1 text-[10px]">Enter</kbd> to send
-                  </Badge>
-                </div>
-
                 <Textarea
                   value={input}
-                  onChange={(e: any) => setInput(e.target.value)}
+                  onChange={(e) => setInput(e.target.value)}
                   onKeyDown={onKeyDown}
                   placeholder="Type your message…"
                   className="min-h-[84px] resize-none rounded-xl"
                 />
-
                 <div className="flex items-center justify-between">
-                  <div className="text-xs text-muted-foreground">
-                    Shift + Enter for new line
-                  </div>
+                  <div className="text-xs text-muted-foreground">Shift + Enter for new line</div>
                   <div className="flex items-center gap-2">
                     {isSending ? (
-                      <Button variant="outline" onClick={() => { /* implement abort controller */ }} className="gap-2">
+                      <Button variant="outline" onClick={() => { /* add AbortController here if streaming */ }} className="gap-2">
                         <StopCircle className="h-4 w-4" />
                         Stop
                       </Button>
