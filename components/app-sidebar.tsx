@@ -6,11 +6,14 @@ import {
   AudioWaveform,
   BookOpen,
   Bot,
+  Building2,
+  ClipboardCheck,
   Command,
   Frame,
   GalleryVerticalEnd,
   Map,
   PieChart,
+  School,
   Settings2,
   SquareTerminal,
 } from "lucide-react"
@@ -38,81 +41,60 @@ const data_tutorial = {
   },
   teams: [
     {
-      name: "Acme Inc",
+      name: "Dashboard",
       logo: GalleryVerticalEnd,
-      plan: "Enterprise",
+      plan: "SparkFBLA",
     },
     {
-      name: "Acme Corp.",
+      name: "Home",
       logo: AudioWaveform,
-      plan: "Startup",
+      plan: "SparkFBLA",
     },
     {
-      name: "Evil Corp.",
+      name: "SparkAI",
       logo: Command,
-      plan: "Free",
+      plan: "SparkFBLA",
     },
   ],
   navMain: [
     {
-      title: "Playground",
+      title: "State",
       url: "#",
-      icon: SquareTerminal,
-      isActive: true,
+      icon: Building2,
       items: [
         {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
+          title: "Calendar",
+          url: "state/calendar",
         },
       ],
     },
     {
-      title: "Models",
+      title: "Chapter",
       url: "#",
-      icon: Bot,
+      icon: School,
       items: [
         {
-          title: "Genesis",
-          url: "#",
+          title: "Membership",
+          url: "chapter/membership",
         },
         {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
+          title: "Calendar",
+          url: "chapter/calendar",
         },
       ],
     },
     {
-      title: "Documentation",
+      title: "Competition",
       url: "#",
-      icon: BookOpen,
+      icon: ClipboardCheck,
       items: [
         {
-          title: "Introduction",
-          url: "#",
+          title: "Events",
+          url: "competition/events",
         },
         {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
+          title: "Guidelines",
+          url: "competition/guidelines",
         },
       ],
     },
@@ -123,38 +105,20 @@ const data_tutorial = {
       items: [
         {
           title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
+          url: "settings#general",
         },
         {
           title: "Limits",
-          url: "#",
+          url: "settings#limits",
         },
       ],
     },
   ],
   projects: [
     {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
+      name: "SparkAI",
+      url: "spark-ai",
+      icon: Bot,
     },
   ],
 }

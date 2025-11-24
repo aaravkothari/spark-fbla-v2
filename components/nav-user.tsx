@@ -93,28 +93,19 @@ export function NavUser() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {/* <DropdownMenuGroup>
+            <DropdownMenuGroup>
+              <a href="/protected/admin">
               <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
+                <CreditCard />
+                Admin Panel
+              </DropdownMenuItem>
+              </a>
+              <DropdownMenuItem>
+                <Bell />
+                Advisor Panel
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator /> */}
             <DropdownMenuItem>
               <LogOut />
               Log out
@@ -138,7 +129,7 @@ export function NavUser() {
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">Loading</span>
-                <span className="truncate text-xs">loading@gmail.com</span>
+                <span className="truncate text-xs">loading@email.com</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -157,7 +148,7 @@ export function NavUser() {
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">Loading</span>
-                  <span className="truncate text-xs">loading@gmail.com</span>
+                  <span className="truncate text-xs">loading@email.com</span>
                 </div>
               </div>
             </DropdownMenuLabel>
